@@ -1,0 +1,40 @@
+Student 1 - Alejandra Avitia-Davila
+Student 2 - Crystal Feng
+Team #19
+                                    Lab1 - Writeup
+    - proc.h: Added variable int status
+    - defs.h : Added void exitS(int status) , int waitS(int*status), int waitpid(int pid, int *status, int options);
+    - usys.S: Added SYSCALL(exitS);, SYSCALL(waitS);, SYSCALL(waitpid);
+    - Syscall.h: Added #define SYS_exitS 22, #define SYS_waitS 23, #define SYS_waitpid 24
+    - syscall.c: Added extern int sys_exitS(void);, extern int sys_waitS(void);, extern int sys_waitpid(void);
+    - user.h: Added void exitS(int status);, int waitS(int *status);, int waitpid(int pid, int *status, int options);
+    - proc.c
+        ~ Added function void exitS(int status)
+            + Copied functionality of legacy void exit(void) function
+            + Added curproc->status = status; after variable declaration
+                + Assigns status to current process 
+        ~ Added function int waitS(int *status)
+            + Copied functionality of legacy int wait(void) function
+            + Added code if(status){*status = p->status}
+                + If there is a status then pass back the status of terminated child into current process
+        ~ Added function int waitpid(int pid, int *status, int options)
+            + Copied functionality of int waitS(void) function
+            + Added code if(pid != p->pid) {continue;} at start of second for loop
+                + This statement waits for a process with a pid that equals to one provided by the pid argument
+    - sysproc.c:
+        ~ Added function int sys_exitS(void)
+            + Copied functionality of legacy int sys_exit(void) function
+            + Initialized variables *status to 0, added if(argint(n, &status) < 0)   {return -1;}, 
+                and changed exit() to exitS(status)
+        ~ Added function int sys_waitS(void)
+            + Copied functionality of legacy int sys_wait(void) function
+            + Initialized variables *status to 0, added if(argptr(n, (void *)&status,sizeof( *status)) < 0){return -1;}, 
+                and changed wait() to waitS(status)
+        ~ Added function int sys_waitpid(void)
+        ~ Declared variables pid and options, and, added if((argptr(0,(void*)&status,sizeof(status)) < 0)|| (argint(1,&pid) < 0)||(argint(2,&options) < 0)){return -1;}, 
+            and return waitpid(pid,status, options);
+    - Makefile:
+        ~ Added _lab1_test\ to UPROGS
+            + For testing provided test file “lab1_test.txt”
+    - lab1_test.txt:
+        ~ Changed all the exit() and wait() to exitS() and waits()
